@@ -9,13 +9,14 @@
 <body>
   <h1>Homelab Dashboard</h1>
 
-  <h2>Service anlegen</h2>
+  <h2>Service anlegen / bearbeiten</h2>
 
   <form id="serviceForm">
     <input id="nameInput" type="text" placeholder="Name" required>
     <input id="typeInput" type="text" placeholder="Typ: http oder tcp" required>
     <input id="targetInput" type="text" placeholder="Target" required>
-    <button type="submit">Service speichern</button>
+    <button id="submitButton" type="submit">Service speichern</button>
+    <button id="cancelEditButton" type="button">Bearbeitung abbrechen</button>
   </form>
 
   <p id="message"></p>
