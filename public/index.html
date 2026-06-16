@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homelab Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Homelab Dashboard</h1>
+
+  <h2>Service anlegen</h2>
+
+  <form id="serviceForm">
+    <input id="nameInput" type="text" placeholder="Name" required>
+    <input id="typeInput" type="text" placeholder="Typ: http oder tcp" required>
+    <input id="targetInput" type="text" placeholder="Target" required>
+    <button type="submit">Service speichern</button>
+  </form>
+
+  <p id="message"></p>
+
+  <h2>Services</h2>
+  <ul id="serviceList"></ul>
+
+  <script src="app.js"></script>
+</body>
+</html>
