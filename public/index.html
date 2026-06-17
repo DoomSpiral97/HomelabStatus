@@ -4,25 +4,106 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Homelab Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Homelab Dashboard</h1>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Homelab Monitor</p>
+        <h1>Service Dashboard</h1>
+        <p class="topbar-copy">
+          Verwalte deine lokalen Dienste, prüfe Erreichbarkeit und behalte den Überblick
+          in einer klaren, ruhigen Oberfläche.
+        </p>
+      </div>
 
-  <h2>Service anlegen / bearbeiten</h2>
+      <div class="topbar-badge">
+        <span class="status-dot live"></span>
+        Local first
+      </div>
+    </header>
 
-  <form id="serviceForm">
-    <input id="nameInput" type="text" placeholder="Name" required>
-    <input id="typeInput" type="text" placeholder="Typ: http oder tcp" required>
-    <input id="targetInput" type="text" placeholder="Target" required>
-    <button id="submitButton" type="submit">Service speichern</button>
-    <button id="cancelEditButton" type="button">Bearbeitung abbrechen</button>
-  </form>
+    <main class="layout-grid">
+      <section class="panel panel-form" aria-labelledby="form-title">
+        <div class="panel-header">
+          <div>
+            <p class="section-kicker">Verwaltung</p>
+            <h2 id="form-title">Service anlegen oder bearbeiten</h2>
+          </div>
+        </div>
 
-  <p id="message"></p>
+        <form id="serviceForm" class="service-form">
+          <label for="nameInput">
+            <span>Name</span>
+          </label>
+          <input
+            id="nameInput"
+            type="text"
+            placeholder="z. B. Jellyfin"
+            required
+          >
 
-  <h2>Services</h2>
-  <ul id="serviceList"></ul>
+          <label for="typeInput">
+            <span>Typ</span>
+          </label>
+          <select id="typeInput" required>
+            <option value="http">http</option>
+            <option value="tcp">tcp</option>
+          </select>
+
+          <label for="targetInput">
+            <span>Target</span>
+          </label>
+          <input
+            id="targetInput"
+            type="text"
+            placeholder="http://localhost:8096"
+            required
+          >
+
+          <div class="form-actions">
+            <button id="submitButton" class="btn btn-primary" type="submit">
+              Service speichern
+            </button>
+            <button id="cancelEditButton" class="btn btn-secondary" type="button">
+              Bearbeitung abbrechen
+            </button>
+          </div>
+        </form>
+
+        <div id="message" class="message-box" aria-live="polite">
+          Bereit für einen neuen Service.
+        </div>
+      </section>
+
+      <section class="panel panel-services" aria-labelledby="services-title">
+        <div class="panel-header">
+          <div>
+            <p class="section-kicker">Übersicht</p>
+            <h2 id="services-title">Deine Services</h2>
+          </div>
+          <span id="serviceCount" class="count-pill">0 Services</span>
+        </div>
+
+        <div id="emptyState" class="empty-state hidden">
+          <div class="empty-icon">◎</div>
+          <h3>Noch keine Services</h3>
+          <p>
+            Lege deinen ersten Homelab-Service an, um Checks, Bearbeitung und Historie
+            direkt im Dashboard zu nutzen.
+          </p>
+        </div>
+
+        <div id="serviceGrid" class="service-grid" aria-live="polite"></div>
+      </section>
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
