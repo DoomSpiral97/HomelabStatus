@@ -15,17 +15,16 @@
   <div class="app-shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">Homelab Monitor</p>
-        <h1>Service Dashboard</h1>
+        <p class="eyebrow">Kinok</p>
+        <h1>Homelab Dashboard</h1>
         <p class="topbar-copy">
-          Verwalte deine lokalen Dienste, prüfe Erreichbarkeit und behalte den Überblick
-          in einer klaren, ruhigen Oberfläche.
+          Dienste hinzufügen und überwachen
         </p>
       </div>
 
       <div class="topbar-badge">
         <span class="status-dot live"></span>
-        Local first
+        Status
       </div>
     </header>
 
@@ -84,12 +83,15 @@
 
       <section class="panel panel-services" aria-labelledby="services-title">
         <div class="panel-header">
-          <div>
-            <p class="section-kicker">Übersicht</p>
-            <h2 id="services-title">Deine Services</h2>
-          </div>
-          <span id="serviceCount" class="count-pill">0 Services</span>
-        </div>
+  <div>
+    <p class="section-kicker">Übersicht</p>
+    <h2 id="services-title">Deine Services</h2>
+  </div>
+  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+    <button id="checkAllButton" class="btn btn-secondary">● Alle prüfen</button>
+    <span id="serviceCount" class="count-pill">0 Services</span>
+  </div>
+</div>
 
         <div id="emptyState" class="empty-state hidden">
           <div class="empty-icon">◎</div>

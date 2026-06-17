@@ -392,8 +392,8 @@ select:focus {
   }
 
   .service-actions {
-    grid-template-columns: 1fr;
-  }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 
   .form-actions {
     flex-direction: column;
@@ -402,4 +402,10 @@ select:focus {
   .btn {
     width: 100%;
   }
+}
+
+.action-btn.check {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fff3b0;
+  border-color: rgba(251, 191, 36, 0.2);
 }
