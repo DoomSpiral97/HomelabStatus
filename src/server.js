@@ -15,6 +15,6 @@ app.use("/api/services", servicesRouter);
 app.use("/api/check", checksRouter);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server läuft auf http://localhost:${PORT}`);
 });
