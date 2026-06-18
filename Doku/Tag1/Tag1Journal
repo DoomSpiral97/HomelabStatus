@@ -1,0 +1,59 @@
+# Zusammenfassung vom 16.06.2026
+
+## Projektstand
+Heute wurde das Homelab-Dashboard von einem einfachen CRUD-Projekt zu einer kleinen Fullstack-Anwendung mit echter Datenbank und erstem Monitoring-Bezug ausgebaut.
+
+## Was heute umgesetzt wurde
+- Projektidee konkretisiert: Homelab Service Dashboard für lokale Dienste wie Jellyfin, QNAP oder andere Services.
+- Backend mit Node.js und Express aufgebaut.
+- Frontend mit HTML, CSS und JavaScript erstellt.
+- Zunächst Datenhaltung mit JSON-Datei umgesetzt.
+- Danach Umstieg von JSON auf SQLite durchgeführt.
+- `better-sqlite3` eingebunden und eine echte lokale Datenbank verwendet.
+- Tabelle `services` angelegt.
+- CRUD-Funktionen für Services umgesetzt:
+  - `GET /api/services`
+  - `POST /api/services`
+  - `PUT /api/services/:id`
+  - `DELETE /api/services/:id`
+- Frontend erweitert, damit Services nicht nur erstellt, sondern auch bearbeitet und gelöscht werden können.
+
+## Datenbank
+Die Datenhaltung wurde von einer einfachen JSON-Datei auf SQLite umgestellt.
+
+Dabei wurden:
+- eine Datenbankdatei `homelab.db` erstellt,
+- die Tabelle `services` automatisch beim Start erzeugt,
+- SQL-Befehle für Lesen, Einfügen, Aktualisieren und Löschen eingebaut.
+
+## Service-Check
+Zusätzlich wurde ein echter HTTP-Service-Check vorbereitet.
+
+Dafür wurde:
+- eine Route zum Prüfen einzelner Services geplant bzw. ergänzt,
+- als Beispiel Jellyfin unter `http://localhost:8096` verwendet,
+- die Antwortzeit und Erreichbarkeit des Dienstes serverseitig geprüft.
+
+## Monitoring-Erweiterung
+Anschließend wurde das Modell um gespeicherte Prüfergebnisse erweitert.
+
+Dafür wurde:
+- eine zweite Tabelle `service_checks` eingeführt,
+- eine Beziehung zwischen `services` und `service_checks` aufgebaut,
+- pro Check gespeichert, ob der Service online war, welcher HTTP-Status zurückkam, wie lange die Antwort dauerte und wann geprüft wurde.
+
+## Ergebnis des Tages
+Am Ende des Tages besteht das Projekt nicht mehr nur aus einer einfachen Liste von Services, sondern aus einer kleinen Homelab-Webanwendung mit:
+- interaktivem Frontend,
+- Express-Backend,
+- SQLite-Datenbank,
+- vollständigem CRUD für Services,
+- erstem echten HTTP-Service-Check,
+- und einer Grundlage für Monitoring bzw. Check-Historie.
+
+## Nächste sinnvolle Schritte
+- Status-Check visuell direkt in der Oberfläche anzeigen.
+- Verlauf schöner im Frontend darstellen.
+- `type` als Dropdown statt Freitext umsetzen.
+- Optional automatische periodische Checks ergänzen.
+- Optional Diagramme und fachliches Modell für Dokumentation oder Präsentation hinzufügen.

@@ -1,7 +1,7 @@
 const Database = require("better-sqlite3");
 const path = require("path");
 
-const { DB_PATH } = require("./src/config/env");
+const { DB_PATH } = require("../config/env");
 const dbPath = path.resolve(DB_PATH);
 const db = new Database(dbPath);
 

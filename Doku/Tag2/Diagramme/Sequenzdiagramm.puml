@@ -1,0 +1,87 @@
+@startuml Sequenzdiagramm - Service Check Ablauf
+
+skinparam backgroundColor #1e1e2e
+skinparam defaultFontColor #cdd6f4
+skinparam defaultFontName "Courier New"
+skinparam defaultFontSize 12
+skinparam sequenceParticipantBackgroundColor #313244
+skinparam sequenceParticipantBorderColor #89b4fa
+skinparam sequenceParticipantFontColor #cdd6f4
+skinparam sequenceActorBackgroundColor #45475a
+skinparam sequenceActorBorderColor #a6e3a1
+skinparam sequenceArrowColor #cba6f7
+skinparam sequenceArrowFontColor #fab387
+skinparam sequenceArrowFontSize 11
+skinparam sequenceLifeLineBorderColor #6c7086
+skinparam sequenceBoxBackgroundColor #181825
+skinparam sequenceBoxBorderColor #45475a
+skinparam noteBackgroundColor #1e1e2e
+skinparam noteBorderColor #6c7086
+skinparam noteFontColor #a6adc8
+
+actor "User" as USER
+participant "Browser\n(index.html)" as HTML
+participant "app.js\n(Frontend)" as APPJS
+participant "server.js\n(Backend)" as SERVER
+database "homelab.db\n(SQLite)" as DB
+participant "Ext. Service\n(z.B. Jellyfin)" as EXT
+
+== Seite wird geöffnet ==
+
+USER -> HTML : öffnet Dashboard
+HTML -> APPJS : DOMContentLoaded\n→ loadServices()
+APPJS -> SERVER : GET /api/services
+SERVER -> DB : SELECT services\n+ letzter Check (Subquery)
+DB --> SERVER : Service-Liste
+SERVER --> APPJS : JSON Array
+APPJS -> APPJS : buildServiceCard()\nfür jeden Service
+APPJS -> HTML : Karten in DOM einfügen
+
+loop für jeden Service
+  APPJS -> APPJS : checkService(id)
+  APPJS -> HTML : Status-Pill → "⏳ Prüfe..."
+  APPJS -> SERVER : GET /api/check/:id
+  SERVER -> DB : SELECT service WHERE id
+  DB --> SERVER : Service (target, type)
+  SERVER -> EXT : fetch(target)\nmit 5s Timeout
+  alt Service antwortet
+    EXT --> SERVER : HTTP Response (z.B. 200 OK)
+    SERVER -> DB : INSERT INTO service_checks\n(is_online=1, status_code, ms)
+    SERVER --> APPJS : { status: "online", responseTimeMs }
+    APPJS -> HTML : Status-Pill → "● Online"
+  else Timeout oder Fehler
+    EXT --> SERVER : Timeout / Connection refused
+    SERVER -> DB : INSERT INTO service_checks\n(is_online=0, error_message)
+    SERVER --> APPJS : { status: "offline" }
+    APPJS -> HTML : Status-Pill → "● Offline"
+  end
+end
+
+== Auto-Refresh (alle 30 Sekunden) ==
+
+APPJS -> APPJS : setInterval → checkAll()
+note right of APPJS : Wiederholt den\nkompletten Ablauf\noben automatisch
+
+== User klickt "Alle prüfen" ==
+
+USER -> HTML : klickt Button
+HTML -> APPJS : checkAll()
+APPJS -> APPJS : loadServices()\n(gleicher Ablauf wie oben)
+
+== User legt neuen Service an ==
+
+USER -> HTML : füllt Formular aus\nund klickt "Speichern"
+HTML -> APPJS : submit → saveService()
+APPJS -> SERVER : POST /api/services\n{ name, type, target }
+SERVER -> SERVER : Validation prüfen
+alt Validation OK
+  SERVER -> DB : INSERT INTO services
+  DB --> SERVER : lastInsertRowid
+  SERVER --> APPJS : 201 Created + Service
+  APPJS -> APPJS : resetForm() + loadServices()
+else Validation fehlgeschlagen
+  SERVER --> APPJS : 400 Bad Request\n{ error: "..." }
+  APPJS -> HTML : Fehlermeldung anzeigen
+end
+
+@enduml

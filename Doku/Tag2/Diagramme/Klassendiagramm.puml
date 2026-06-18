@@ -1,0 +1,104 @@
+@startuml Klassendiagramm - HomelabStatus
+
+skinparam backgroundColor #1e1e2e
+skinparam defaultFontColor #cdd6f4
+skinparam defaultFontName "Courier New"
+skinparam defaultFontSize 12
+skinparam classBackgroundColor #313244
+skinparam classBorderColor #89b4fa
+skinparam classHeaderBackgroundColor #45475a
+skinparam classFontColor #cdd6f4
+skinparam classFontSize 13
+skinparam classFontStyle bold
+skinparam arrowColor #cba6f7
+skinparam arrowFontColor #fab387
+skinparam arrowFontSize 11
+skinparam noteBackgroundColor #1e1e2e
+skinparam noteBorderColor #6c7086
+skinparam noteFontColor #a6adc8
+
+' ── Frontend ──────────────────────────────────────────────────────────────────
+
+class AppJS <<Frontend>> {
+  - editingServiceId : number | null
+  --
+  + loadServices() : void
+  + buildServiceCard(service) : HTMLElement
+  + checkService(id) : void
+  + checkAll() : void
+  + saveService(event) : void
+  + deleteService(id) : void
+  + startEdit(service) : void
+  + resetForm() : void
+  + escapeHtml(str) : string
+}
+
+' ── Backend ───────────────────────────────────────────────────────────────────
+
+class ServerJS <<Backend>> {
+  - app : Express
+  - PORT : number
+  --
+  + GET /api/services() : Service[]
+  + POST /api/services() : Service
+  + PUT /api/services/:id() : Service
+  + DELETE /api/services/:id() : void
+  + GET /api/check/:id() : CheckResult
+}
+
+class EnvConfig <<Config>> {
+  + PORT : number
+  + DB_PATH : string
+}
+
+class DatabaseJS <<Database>> {
+  - db : BetterSQLite3.Database
+  --
+  + prepare(sql) : Statement
+  + pragma(setting) : void
+  + exec(sql) : void
+}
+
+' ── Datenmodelle ──────────────────────────────────────────────────────────────
+
+class Service <<Model>> {
+  + id : INTEGER (PK)
+  + name : TEXT
+  + type : TEXT
+  + target : TEXT
+  --
+  + lastCheckOnline : boolean | null
+  + lastResponseTimeMs : number | null
+  + lastCheckedAt : string | null
+}
+
+class ServiceCheck <<Model>> {
+  + id : INTEGER (PK)
+  + service_id : INTEGER (FK)
+  + is_online : INTEGER
+  + status_code : INTEGER | null
+  + response_time_ms : INTEGER
+  + checked_at : TEXT
+  + error_message : TEXT | null
+}
+
+' ── Beziehungen ───────────────────────────────────────────────────────────────
+
+AppJS --> ServerJS : HTTP fetch()\n(GET, POST, PUT, DELETE)
+ServerJS --> EnvConfig : liest PORT
+ServerJS --> DatabaseJS : importiert db
+DatabaseJS --> Service : liest / schreibt
+DatabaseJS --> ServiceCheck : liest / schreibt
+ServiceCheck "0..*" --> "1" Service : service_id (FK)\nON DELETE CASCADE
+
+note right of Service
+  type muss "http" oder "tcp" sein.
+  Validation im Server.
+end note
+
+note right of ServiceCheck
+  is_online: 1 = online, 0 = offline
+  checked_at: ISO 8601 Timestamp
+end note
+
+@enduml

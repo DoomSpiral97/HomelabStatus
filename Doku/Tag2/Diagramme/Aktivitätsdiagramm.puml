@@ -1,0 +1,93 @@
+@startuml Aktivitätsdiagramm - Service Status Check
+
+skinparam backgroundColor #1e1e2e
+skinparam defaultFontColor #cdd6f4
+skinparam defaultFontName "Courier New"
+skinparam defaultFontSize 12
+skinparam activityBackgroundColor #313244
+skinparam activityBorderColor #89b4fa
+skinparam activityFontColor #cdd6f4
+skinparam activityStartColor #a6e3a1
+skinparam activityEndColor #f38ba8
+skinparam activityArrowColor #cba6f7
+skinparam activityArrowFontColor #fab387
+skinparam activityArrowFontSize 11
+skinparam activityDiamondBackgroundColor #45475a
+skinparam activityDiamondBorderColor #cba6f7
+skinparam activityDiamondFontColor #cdd6f4
+skinparam noteBackgroundColor #1e1e2e
+skinparam noteBorderColor #6c7086
+skinparam noteFontColor #a6adc8
+
+|Browser (app.js)|
+start
+:Seite wird geladen;
+:loadServices() aufrufen;
+:GET /api/services senden;
+
+|Server (server.js)|
+:Anfrage empfangen;
+:Services aus DB laden\n(inkl. letztem Check per Subquery);
+:JSON Array zurückgeben;
+
+|Browser (app.js)|
+:Services empfangen;
+if (Liste leer?) then (ja)
+  :Empty State anzeigen;
+  stop
+else (nein)
+  :Für jeden Service\nbuildServiceCard() aufrufen;
+  :Karten in DOM einfügen;
+  :checkService(id) für jeden Service aufrufen;
+endif
+
+|Browser (app.js)|
+:Status-Pill → "⏳ Prüfe...";
+:Prüfen-Button deaktivieren;
+:GET /api/check/:id senden;
+
+|Server (server.js)|
+:Service aus DB laden;
+if (Service existiert?) then (nein)
+  :404 zurückgeben;
+  stop
+else (ja)
+  :Startzeit merken;
+  :fetch(target) mit 5s Timeout;
+endif
+
+if (Antwort erhalten?) then (ja)
+  :Antwortzeit berechnen;
+  if (response.ok?) then (ja)
+    :is_online = 1;
+  else (nein)
+    :is_online = 0;
+  endif
+  :response.text() konsumieren\n(Verbindung sauber schließen);
+  :INSERT INTO service_checks\n(is_online, status_code, ms, timestamp);
+  :{ status: "online/offline" } zurückgeben;
+else (nein / Timeout)
+  :is_online = 0;
+  :error_message speichern;
+  :INSERT INTO service_checks\n(is_online=0, error_message);
+  :{ status: "offline" } zurückgeben;
+endif
+
+|Browser (app.js)|
+:Antwort empfangen;
+if (status == "online"?) then (ja)
+  :Status-Pill → "● Online" (grün);
+else (nein)
+  :Status-Pill → "● Offline" (rot);
+endif
+:Prüfen-Button wieder aktivieren;
+
+note right
+  Dieser Ablauf wird
+  automatisch alle 30s
+  wiederholt (setInterval)
+end note
+
+stop
+
+@enduml

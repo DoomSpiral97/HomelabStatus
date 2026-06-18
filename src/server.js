@@ -1,13 +1,13 @@
 const express = require("express");
 const path = require("path");
-const db = require("./database");
-
-const { PORT } = require("./src/config/env");
+const db = require("./db/database");
+const { PORT } = require("./config/env");
 
 const app = express();
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "..", "public")));
+
 
 // ─── Services CRUD ────────────────────────────────────────────────────────────
 
