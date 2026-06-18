@@ -1,5 +1,4 @@
 node_modules/
-homelab.db
 .env
-homelab.db-shm
-homelab.db-wal  
+data/
+doku/
