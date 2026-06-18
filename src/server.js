@@ -10,6 +10,11 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
+// ─── Health Check für ZimaOS ──────────────────────────────────────────────────
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use("/api/services", servicesRouter);
 app.use("/api/check", checksRouter);

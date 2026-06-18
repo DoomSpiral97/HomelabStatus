@@ -4,9 +4,15 @@ services:
     container_name: homelabstatus
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${HOST_PORT:-3000}:3000"
     volumes:
       - ./data:/data
     environment:
       - PORT=3000
       - DB_PATH=/data/homelab.db
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
