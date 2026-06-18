@@ -1,6 +1,6 @@
 let editingServiceId = null;
 
-// ─── Services laden & rendern ────────────────────────────────────────────────
+// ─── Services laden & rendern ─────────────────────────────────────────────────
 
 async function loadServices() {
   const response = await fetch("/api/services");
@@ -20,15 +20,15 @@ async function loadServices() {
   }
   emptyState.classList.add("hidden");
 
-  // Karten rendern + direkt jeden Service checken
   services.forEach((service) => {
     const card = buildServiceCard(service);
     grid.appendChild(card);
     checkService(service.id);
+    loadHistory(service.id);
   });
 }
 
-// ─── Karte bauen ─────────────────────────────────────────────────────────────
+// ─── Karte bauen ──────────────────────────────────────────────────────────────
 
 function buildServiceCard(service) {
   const card = document.createElement("div");
@@ -53,6 +53,16 @@ function buildServiceCard(service) {
 
     <span class="status-pill unknown">● Unbekannt</span>
 
+    <div class="history-block">
+      <div class="history-bars" id="bars-${service.id}">
+        ${Array(10).fill('<div class="history-bar empty"></div>').join("")}
+      </div>
+      <div class="history-uptime" id="uptime-${service.id}">
+        <span class="uptime-pill muted">24h: –</span>
+        <span class="uptime-pill muted">7d: –</span>
+      </div>
+    </div>
+
     <div class="service-actions">
       <button class="action-btn check" data-action="check">● Prüfen</button>
       <button class="action-btn primary" data-action="edit">Bearbeiten</button>
@@ -60,14 +70,16 @@ function buildServiceCard(service) {
     </div>
   `;
 
-  card.querySelector("[data-action='check']").addEventListener("click", () => checkService(service.id));
+  card.querySelector("[data-action='check']").addEventListener("click", () => {
+    checkService(service.id);
+  });
   card.querySelector("[data-action='edit']").addEventListener("click", () => startEdit(service));
   card.querySelector("[data-action='delete']").addEventListener("click", () => deleteService(service.id));
 
   return card;
 }
 
-// ─── XSS-Schutz ──────────────────────────────────────────────────────────────
+// ─── XSS-Schutz ───────────────────────────────────────────────────────────────
 
 function escapeHtml(str) {
   return String(str)
@@ -106,7 +118,50 @@ async function checkService(id) {
     pill.textContent = "● Fehler";
   } finally {
     btn.disabled = false;
+    loadHistory(id); // History nach jedem Check aktualisieren
   }
+}
+
+// ─── History laden & Balken rendern ──────────────────────────────────────────
+
+async function loadHistory(id) {
+  try {
+    const response = await fetch(`/api/check/${id}/history`);
+    const data = await response.json();
+
+    const barsEl = document.getElementById(`bars-${id}`);
+    const uptimeEl = document.getElementById(`uptime-${id}`);
+    if (!barsEl || !uptimeEl) return;
+
+    // Balken rendern (10 Stück, links = ältester)
+    const bars = Array(10).fill(null).map((_, i) => {
+      const check = data.last10[i] ?? null;
+      if (!check) return `<div class="history-bar empty" title="Kein Check"></div>`;
+      const cls = check.is_online ? "online" : "offline";
+      const time = new Date(check.checked_at).toLocaleString("de-DE");
+      const label = check.is_online ? "Online" : "Offline";
+      return `<div class="history-bar ${cls}" title="${label} – ${time}"></div>`;
+    });
+    barsEl.innerHTML = bars.join("");
+
+    // Uptime-Pills rendern
+    const fmt = (pct) => pct === null ? "–" : `${pct}%`;
+    const cls24 = uptimeClass(data.uptime24h);
+    const cls7d = uptimeClass(data.uptime7d);
+    uptimeEl.innerHTML = `
+      <span class="uptime-pill ${cls24}">24h: ${fmt(data.uptime24h)}</span>
+      <span class="uptime-pill ${cls7d}">7d: ${fmt(data.uptime7d)}</span>
+    `;
+  } catch (err) {
+    console.error("History konnte nicht geladen werden:", err);
+  }
+}
+
+function uptimeClass(pct) {
+  if (pct === null) return "muted";
+  if (pct >= 90) return "good";
+  if (pct >= 70) return "warn";
+  return "bad";
 }
 
 async function checkAll() {
@@ -191,6 +246,5 @@ document.getElementById("serviceForm").addEventListener("submit", saveService);
 document.getElementById("cancelEditButton").addEventListener("click", resetForm);
 document.getElementById("checkAllButton").addEventListener("click", checkAll);
 
-// Beim Start laden + alle 30 Sekunden automatisch neu laden & checken
 loadServices();
 setInterval(checkAll, 30_000);

@@ -409,3 +409,77 @@ select:focus {
   color: #fff3b0;
   border-color: rgba(251, 191, 36, 0.2);
 }
+
+
+/* ─── History ──────────────────────────────────────────────────────────────── */
+
+.history-block {
+  display: grid;
+  gap: 10px;
+}
+
+.history-bars {
+  display: flex;
+  gap: 4px;
+  height: 28px;
+}
+
+.history-bar {
+  flex: 1;
+  border-radius: 4px;
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+.history-bar:hover {
+  transform: scaleY(1.15);
+  opacity: 0.9;
+  cursor: default;
+}
+
+.history-bar.online {
+  background: rgba(34, 197, 94, 0.75);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.history-bar.offline {
+  background: rgba(251, 113, 133, 0.75);
+  border: 1px solid rgba(251, 113, 133, 0.4);
+}
+
+.history-bar.empty {
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.history-uptime {
+  display: flex;
+  gap: 8px;
+}
+
+.uptime-pill {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.uptime-pill.good {
+  background: rgba(34, 197, 94, 0.14);
+  color: #baf7cc;
+}
+
+.uptime-pill.warn {
+  background: rgba(251, 191, 36, 0.14);
+  color: #fff3b0;
+}
+
+.uptime-pill.bad {
+  background: rgba(251, 113, 133, 0.14);
+  color: #ffd1d8;
+}
+
+.uptime-pill.muted {
+  background: rgba(148, 163, 184, 0.1);
+  color: var(--muted);
+}
