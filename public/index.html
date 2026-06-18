@@ -12,99 +12,85 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">Kinok</p>
-        <h1>Homelab Dashboard</h1>
-        <p class="topbar-copy">
-          Dienste hinzufügen und überwachen
-        </p>
+  <div class="app">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <svg class="logo-icon" viewBox="0 0 32 32" fill="none" aria-label="Homelab Status">
+          <rect x="2" y="6" width="28" height="7" rx="2" stroke="currentColor" stroke-width="2"/>
+          <rect x="2" y="19" width="28" height="7" rx="2" stroke="currentColor" stroke-width="2"/>
+          <circle cx="26" cy="9.5" r="1.5" fill="currentColor"/>
+          <circle cx="26" cy="22.5" r="1.5" fill="currentColor"/>
+        </svg>
+        <div>
+          <div class="logo-title">Homelab Dashboard</div>
+          <div class="logo-sub"></div>
+        </div>
       </div>
 
-      <div class="topbar-badge">
-        <span class="status-dot live"></span>
-        Status
+      <div class="header-right">
+        <span id="serviceCount" class="count-badge">0 Services</span>
+        <button class="icon-btn" id="themeToggle" aria-label="Theme wechseln">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+          </svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
       </div>
     </header>
 
-    <main class="layout-grid">
-      <section class="panel panel-form" aria-labelledby="form-title">
-        <div class="panel-header">
-          <div>
-            <p class="section-kicker">Verwaltung</p>
-            <h2 id="form-title">Service anlegen oder bearbeiten</h2>
+    <!-- Service anlegen – Highlight Card -->
+    <section class="form-section">
+      <div class="form-section-header">
+        <div>
+          <p class="form-kicker">Verwaltung</p>
+          <h2>Service anlegen oder bearbeiten</h2>
+        </div>
+      </div>
+
+      <form id="serviceForm" class="service-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label for="nameInput">Name</label>
+            <input id="nameInput" type="text" placeholder="z. B. Jellyfin" required autocomplete="off">
+          </div>
+          <div class="form-field form-field--wide">
+            <label for="targetInput">URL</label>
+            <input id="targetInput" type="text" placeholder="http://192.168.1.10:8096" required autocomplete="off">
+          </div>
+          <div class="form-field form-field--actions">
+            <label>&nbsp;</label>
+            <div class="form-btns">
+              <button id="submitButton" class="btn btn-primary" type="submit">Speichern</button>
+              <button id="cancelEditButton" class="btn btn-ghost" type="button">Abbrechen</button>
+            </div>
           </div>
         </div>
+        <div id="message" class="form-message" aria-live="polite"></div>
+      </form>
+    </section>
 
-        <form id="serviceForm" class="service-form">
-          <label for="nameInput">
-            <span>Name</span>
-          </label>
-          <input
-            id="nameInput"
-            type="text"
-            placeholder="z. B. Jellyfin"
-            required
-          >
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <button id="checkAllButton" class="btn btn-secondary">Alle prüfen</button>
+    </div>
 
-          <label for="typeInput">
-            <span>Typ</span>
-          </label>
-          <select id="typeInput" required>
-            <option value="http">http</option>
-            <option value="tcp">tcp</option>
-          </select>
+    <!-- Grid -->
+    <main id="serviceGrid" class="service-grid" aria-live="polite"></main>
 
-          <label for="targetInput">
-            <span>Target</span>
-          </label>
-          <input
-            id="targetInput"
-            type="text"
-            placeholder="http://localhost:8096"
-            required
-          >
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state hidden">
+      <svg width="40" height="40" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="2" y="6" width="28" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+        <rect x="2" y="19" width="28" height="7" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <p>Noch keine Services. Füge deinen ersten oben hinzu.</p>
+    </div>
 
-          <div class="form-actions">
-            <button id="submitButton" class="btn btn-primary" type="submit">
-              Service speichern
-            </button>
-            <button id="cancelEditButton" class="btn btn-secondary" type="button">
-              Bearbeitung abbrechen
-            </button>
-          </div>
-        </form>
-
-        <div id="message" class="message-box" aria-live="polite">
-          Bereit für einen neuen Service.
-        </div>
-      </section>
-
-      <section class="panel panel-services" aria-labelledby="services-title">
-        <div class="panel-header">
-  <div>
-    <p class="section-kicker">Übersicht</p>
-    <h2 id="services-title">Deine Services</h2>
-  </div>
-  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-    <button id="checkAllButton" class="btn btn-secondary">● Alle prüfen</button>
-    <span id="serviceCount" class="count-pill">0 Services</span>
-  </div>
-</div>
-
-        <div id="emptyState" class="empty-state hidden">
-          <div class="empty-icon">◎</div>
-          <h3>Noch keine Services</h3>
-          <p>
-            Lege deinen ersten Homelab-Service an, um Checks, Bearbeitung und Historie
-            direkt im Dashboard zu nutzen.
-          </p>
-        </div>
-
-        <div id="serviceGrid" class="service-grid" aria-live="polite"></div>
-      </section>
-    </main>
   </div>
 
   <script src="app.js"></script>

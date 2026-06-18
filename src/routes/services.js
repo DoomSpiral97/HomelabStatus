@@ -6,7 +6,7 @@ const db = require("../db/database");
 router.get("/", (req, res) => {
   const services = db.prepare(`
     SELECT
-      s.id, s.name, s.type, s.target,
+      s.id, s.name, s.target,
       (SELECT sc.is_online FROM service_checks sc
        WHERE sc.service_id = s.id ORDER BY sc.checked_at DESC LIMIT 1) AS lastCheckOnline,
       (SELECT sc.response_time_ms FROM service_checks sc
@@ -16,29 +16,32 @@ router.get("/", (req, res) => {
     FROM services s ORDER BY s.id DESC
   `).all();
 
-  res.json(services.map((s) => ({
-    ...s,
-    lastCheckOnline: s.lastCheckOnline === null ? null : Boolean(s.lastCheckOnline)
-  })));
+  res.json(
+    services.map((s) => ({
+      ...s,
+      lastCheckOnline:
+        s.lastCheckOnline === null ? null : Boolean(s.lastCheckOnline),
+    }))
+  );
 });
 
 // ─── POST neuen Service anlegen ───────────────────────────────────────────────
 router.post("/", (req, res) => {
-  const { name, type, target } = req.body;
+  const { name, target } = req.body;
 
   if (!name || name.trim() === "")
     return res.status(400).json({ error: "Name ist erforderlich." });
-  if (!type || (type !== "http" && type !== "tcp"))
-    return res.status(400).json({ error: "Typ muss 'http' oder 'tcp' sein." });
   if (!target || target.trim() === "")
     return res.status(400).json({ error: "Target ist erforderlich." });
 
   const result = db
-    .prepare("INSERT INTO services (name, type, target) VALUES (?, ?, ?)")
-    .run(name.trim(), type.trim(), target.trim());
+    .prepare(
+      "INSERT INTO services (name, type, target) VALUES (?, 'http', ?)"
+    )
+    .run(name.trim(), target.trim());
 
   const newService = db
-    .prepare("SELECT id, name, type, target FROM services WHERE id = ?")
+    .prepare("SELECT id, name, target FROM services WHERE id = ?")
     .get(result.lastInsertRowid);
 
   res.status(201).json(newService);
@@ -47,23 +50,27 @@ router.post("/", (req, res) => {
 // ─── PUT Service aktualisieren ────────────────────────────────────────────────
 router.put("/:id", (req, res) => {
   const id = Number(req.params.id);
-  const { name, type, target } = req.body;
+  const { name, target } = req.body;
 
   if (!name || name.trim() === "")
     return res.status(400).json({ error: "Name ist erforderlich." });
-  if (!type || (type !== "http" && type !== "tcp"))
-    return res.status(400).json({ error: "Typ muss 'http' oder 'tcp' sein." });
   if (!target || target.trim() === "")
     return res.status(400).json({ error: "Target ist erforderlich." });
 
   const result = db
-    .prepare("UPDATE services SET name = ?, type = ?, target = ? WHERE id = ?")
-    .run(name.trim(), type.trim(), target.trim(), id);
+    .prepare(
+      "UPDATE services SET name = ?, target = ? WHERE id = ?"
+    )
+    .run(name.trim(), target.trim(), id);
 
   if (result.changes === 0)
     return res.status(404).json({ error: "Service nicht gefunden." });
 
-  res.json(db.prepare("SELECT id, name, type, target FROM services WHERE id = ?").get(id));
+  res.json(
+    db
+      .prepare("SELECT id, name, target FROM services WHERE id = ?")
+      .get(id)
+  );
 });
 
 // ─── DELETE Service löschen ───────────────────────────────────────────────────
